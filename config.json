@@ -1,0 +1,10 @@
+{
+    "fuzzyness": 10,
+    "grid": {
+        "width": 256, 
+        "height": 256
+    },
+    "indexDir": "./work/indexed",
+    "mosaicDir": "./work/mosaic",
+    "tint": 0.7
+}

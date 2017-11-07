@@ -1,0 +1,30 @@
+{
+  "name": "mosaic-me",
+  "version": "0.0.0",
+  "private": true,
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "rm -rf work/testIndex; mocha --recursive"
+  },
+  "dependencies": {
+    "async": "^2.5.0",
+    "body-parser": "~1.18.2",
+    "canvas": "^1.6.7",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "~4.15.5",
+    "hbs": "~4.0.1",
+    "kd-tree-javascript": "^1.0.3",
+    "mkdirp": "^0.5.1",
+    "morgan": "~1.9.0",
+    "multer": "^1.3.0",
+    "serve-favicon": "~2.4.5"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1"
+  }
+}
