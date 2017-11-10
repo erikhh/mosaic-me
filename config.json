@@ -5,6 +5,11 @@
         "height": 256
     },
     "indexDir": "./work/indexed",
+    "minTileDimension": {
+        "width": 2,
+        "height": 2
+    },
     "mosaicDir": "./work/mosaic",
-    "tint": 0.7
+    "tint": 0.7,
+    "zOffset": 1
 }
