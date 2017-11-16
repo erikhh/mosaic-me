@@ -1,4 +1,12 @@
 logging:
-  level: INFO
-  loggers:
-    org.highmoor: DEBUG
+    level: INFO
+    loggers:
+        org.highmoor: DEBUG
+
+server:
+    type: simple
+    applicationContextPath: /
+    rootPath: /api/
+    connector:
+        type: http
+        port: 8080
