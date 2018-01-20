@@ -1,10 +1,25 @@
 package org.highmoor;
 
 import io.dropwizard.Configuration;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+import org.highmoor.api.Grid;
 
+/**
+ *  Configuration pojo.
+ *
+ */
+@Getter
+@Setter
 public class MosaicMeConfiguration extends Configuration {
-    // TODO: implement service configuration
+  private String indexDir;
+  private String sourceDir;
+  private String mosaicDir;
+  
+  @NotNull
+  private Grid minTileDimension;
+  
+  @NotNull
+  private Grid mosaicSize;
 }

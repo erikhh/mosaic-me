@@ -1,0 +1,86 @@
+#!/usr/bin/env node
+
+/**
+ * Crawl images from Instagram.
+**/
+
+const config = require('../config.json')
+const util = require('util');
+var jsdom = require('jsdom');
+var http = require('https');
+var fs = require('fs');
+var path = require('path');
+var Crawler = require("crawler");
+
+const urlTemplate = 'https://www.instagram.com/explore/tags/%s/?max_id=%s';
+
+var downloaded = 0
+
+var c = new Crawler({
+    jQuery: 'jsdom',
+    // rateLimit: 10000,
+    maxConnections : 5,
+    // This will be called for each crawled page
+    callback : function (error, res, done) {
+        if (error) {
+            console.log(error);
+            return done(error);
+        } else {
+            dom = new jsdom.JSDOM(res.body, { runScripts: "outside-only" });
+            if (!dom.window.document.body.children[1]) {
+                return done();
+            }
+            data = dom.window.eval(dom.window.document.body.children[1].textContent);
+            tagPage = data.entry_data.TagPage;
+            if (!tagPage) {
+                return done();
+            }
+            tagPage.forEach(processTagPage);
+            if (tagPage[0].tag.media.page_info.has_next_page && downloaded < config.maxImages) {
+                c.queue(util.format(urlTemplate, tagPage[0].tag.name, tagPage[0].tag.media.page_info.end_cursor));
+            }
+            done();
+        }
+    }
+});
+
+function processTagPage(tagPage) {
+    console.log("Processing page for tag %s downloads so far: %d", tagPage.tag.name, downloaded);
+    tagPage.tag.media.nodes.forEach(function(media) {
+        var dest = util.format("%s/%s%s", config.dir, media.id, path.extname(media.thumbnail_src));
+        download(media.thumbnail_src, dest, function(err) {
+            if(err) {
+                console.log("Error downloading; %s", err);
+            } else {
+                //console.log("Downloaded " + media.id);
+            }
+        });
+    });
+};
+
+function download(url, destination, callback) {
+    fs.exists(destination, function(exists) {
+        if (!exists) {
+            var file = fs.createWriteStream(destination);
+            var request = http.get(url, function(response) {
+                response.pipe(file);
+                file.on('finish', function() {
+                    downloaded++
+                    file.close(callback);
+                });
+            }).on('error', function(error) {
+                fs.unlink(destination);
+                if (callback) {
+                    callback(error.message);
+                }
+            });
+        } else {
+            //console.log("Skipping, existing file; %s", destination);
+        }
+    });
+};
+
+config.tags.forEach(function(tag) {
+    c.queue(util.format('https://www.instagram.com/explore/tags/%s/', tag));
+});
+

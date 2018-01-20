@@ -1,3 +1,13 @@
+indexDir: /Users/erik/Desktop/work/indexed
+minTileDimension:
+    width: 4
+    height: 4
+mosaicDir: /Users/erik/Desktop/work/mosaic
+mosaicSize:
+    width: 256
+    height: 256
+sourceDir: /Users/erik/Instagram
+
 logging:
     level: INFO
     loggers:

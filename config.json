@@ -1,15 +1,22 @@
 {
+    "dir": "/Users/erik/Instagram",
     "fuzzyness": 10,
     "grid": {
         "width": 256, 
         "height": 256
     },
     "indexDir": "./work/indexed",
+    "maxImages": 65500,
     "minTileDimension": {
-        "width": 2,
-        "height": 2
+        "width": 4,
+        "height": 4
     },
     "mosaicDir": "./work/mosaic",
+    "tags": [
+        "selfie",
+        "instagirl",
+        "instaboy"
+    ],
     "tint": 0.7,
     "zOffset": 1
 }
