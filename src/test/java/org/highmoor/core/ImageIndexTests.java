@@ -3,6 +3,7 @@ package org.highmoor.core;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import org.highmoor.api.Pixel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +28,11 @@ public class ImageIndexTests {
     
     File imageFile = new File("src/test/resources/fixtures/rainbow.jpg");  
     
-    File added = imageIndex.addImage(imageFile);
+    Pixel added = imageIndex.addImage(imageFile);
     
     assertThat(added).isNotNull();
-    assertThat(added.getPath()).isEqualTo(expectedNewFile);
+    assertThat(added.getRed()).isEqualTo(121);
+    assertThat(added.getBlue()).isEqualTo(134);
+    assertThat(added.getGreen()).isEqualTo(132);
   }
 }

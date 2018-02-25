@@ -7,6 +7,7 @@ import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.eclipse.jetty.http.QuotedQualityCSV;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.highmoor.cli.BuildIndexCommand;
 import org.highmoor.resources.MosaicResource;
@@ -39,7 +40,6 @@ public class MosaicMeApplication extends Application<MosaicMeConfiguration> {
         .build();
 
     bootstrap.addBundle(guiceBundle);
-    
     bootstrap.addCommand(new BuildIndexCommand(this));
   }
 
@@ -50,4 +50,7 @@ public class MosaicMeApplication extends Application<MosaicMeConfiguration> {
     environment.jersey().register(guiceBundle.getInjector().getInstance(PhotoResource.class));
   }
 
+  public GuiceBundle<MosaicMeConfiguration> getGuiceBundle() {
+    return guiceBundle;
+  }
 }

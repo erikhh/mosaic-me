@@ -104,34 +104,20 @@ public class ImageIndex {
     locks.get(pixel).writeLock().unlock();
   }
   
-  public File addImage(@NonNull File imageFile) {
+  public Pixel addImage(@NonNull File imageFile) {
     try {
       DigestInputStream digestStream = new DigestInputStream(new FileInputStream(imageFile), MessageDigest.getInstance("SHA-256"));
       BufferedImage image = ImageIO.read(digestStream);
-      double avgRed = 0;
-      double avgGreen = 0;
-      double avgBlue = 0;
-      int pixelCount = image.getWidth() * image.getHeight();
-      for (int x = 0; x < image.getWidth(); x++) {
-        for (int y = 0; y < image.getHeight(); y++) {
-          int rgb = image.getRGB(x, y);
-          double red = (rgb >> 16) & 0xff;
-          double green = (rgb >> 8) & 0xff;
-          double blue = (rgb) & 0xff;
-          avgRed += red / pixelCount;
-          avgGreen += green / pixelCount;
-          avgBlue += blue / pixelCount;
-        }
-      }
+      int[] avgColor = averageColor(image);
       String fileName = 
           BaseEncoding.base16().encode(digestStream.getMessageDigest().digest()).toLowerCase() 
           + "." + Files.getFileExtension(imageFile.getName());
       
-      File destination = Paths.get(indexDir, ORIG, format(avgRed), format(avgGreen), format(avgBlue), fileName).toFile();
+      File destination = Paths.get(indexDir, ORIG, format(avgColor[0]), format(avgColor[1]), format(avgColor[2]), fileName).toFile();
       Pixel pixel = Pixel.builder()
-          .red((int) round(avgRed))
-          .green((int) round(avgGreen))
-          .blue((int) round(avgBlue))
+          .red((int) avgColor[0])
+          .green((int) avgColor[1])
+          .blue((int) avgColor[2])
           .fileName(fileName)
           .build();
       
@@ -139,7 +125,7 @@ public class ImageIndex {
       try {
         Files.createParentDirs(destination);
         ImageIO.write(image, "JPEG", destination);
-        return destination;
+        return pixel;
       } finally {
         unlockWrite(pixel);
       }
@@ -149,8 +135,27 @@ public class ImageIndex {
     }
   }
 
-  private String format(double value) {
-    return String.valueOf(Math.round(value));
+  private int[] averageColor(BufferedImage image) {
+    double avgRed = 0;
+    double avgGreen = 0;
+    double avgBlue = 0;
+    int pixelCount = image.getWidth() * image.getHeight();
+    for (int x = 0; x < image.getWidth(); x++) {
+      for (int y = 0; y < image.getHeight(); y++) {
+        int rgb = image.getRGB(x, y);
+        double red = (rgb >> 16) & 0xff;
+        double green = (rgb >> 8) & 0xff;
+        double blue = (rgb) & 0xff;
+        avgRed += red / pixelCount;
+        avgGreen += green / pixelCount;
+        avgBlue += blue / pixelCount;
+      }
+    }
+    return new int[] {(int) round(avgRed), (int) round(avgGreen), (int) round(avgBlue)};
+  }
+  
+  private String format(int value) {
+    return String.valueOf(value);
   }
 
   public Pixel selectPixel(int red, int green, int blue) {
