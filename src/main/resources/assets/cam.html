@@ -1,0 +1,109 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Maak een foto!</title>
+	<style type="text/css">
+		body { 
+			font-family: Helvetica, sans-serif; 
+		}
+		form { 
+			margin-top: 15px; 
+		}
+		form > input { 
+			margin-right: 15px; 
+		}
+		#my_camera {
+			margin: auto;
+			text-align: center;
+		}
+		h1 {
+			text-align: center;
+		}
+		
+		#results { 
+            float:right; 
+            margin:20px; 
+            padding:20px; 
+            border:1px solid; 
+            background:#ccc; 
+        }
+	</style>
+</head>
+<body>
+	<div id="heading">
+	   <h1>Druk op de knop om een foto te maken!</h1>
+	</div>
+	
+	<div id="results">
+	    <img src="images/selfie.jpeg" style="width: 256px; height: 256px" />
+	    <h2>Staat er goed op!</h2>
+	</div>
+	
+	<div id="my_camera"></div>
+	
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="javascripts/webcam.min.js"></script>
+	
+	<!-- Configure a few settings and attach camera -->
+	<script language="JavaScript">
+		Webcam.set({
+			// live preview size
+			width: 640,
+			height: 480,
+			
+			// device capture size
+			dest_width: 320,
+			dest_height: 240,
+			
+			// final cropped size
+			crop_width: 240,
+			crop_height: 240,
+			
+			// format and quality
+			image_format: 'jpeg',
+			jpeg_quality: 90
+		});
+		Webcam.attach( '#my_camera' );
+		
+	</script>
+	
+	<!-- Code to handle taking the snapshot and displaying it locally -->
+	<script language="JavaScript">
+	    var enabled = true;
+		function take_snapshot() {
+			// take snapshot and get image data
+			Webcam.snap( function(data_uri) {
+				Webcam.upload( data_uri, '/api/mosaic', function(code, text) {
+					console.log(code, " ", text);
+				});
+				document.getElementById('results').innerHTML =  
+                    '<img src="'+data_uri+'"/>' +
+                    '<h2>Staat er goed op!</h2>';
+			} );
+		}
+		
+		document.addEventListener("keydown", keyDownTextField, false);
+
+		function keyDownTextField(e) {
+		var keyCode = e.keyCode;
+		  if (enabled && keyCode==13) {
+		    enabled = false;
+		    document.getElementById('heading').innerHTML =
+		      '<h1>Kijk op het grote scherm.</h1>';
+		  	take_snapshot();
+		  	setInterval(function() {
+		  	   document.getElementById('heading').innerHTML =
+              '<h1>Druk op de knop om een foto te maken!</h1>';
+              document.getElementById('results').innerHTML =  
+                    '<img src="images/selfie.jpeg" style="width: 256px; height: 256px"/>' +
+                    '<h2>Staat er goed op!</h2>';
+		  	   enabled = true;
+		  	}, 30000);
+		  } 
+		}
+	</script>
+	
+</body>
+</html>

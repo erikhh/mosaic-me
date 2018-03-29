@@ -7,20 +7,19 @@
     <script src="javascripts/leaflet.js"></script>
   </head>
   <body>
-    <form action="/api/mosaic" method="POST" enctype="multipart/form-data">
-      Select an image to upload:
-      <input type="file" name="picture"> 
-      <input type="submit" value="Upload Image">
-    </form>
-
     <div id='map'></div>
 
     <script type="text/javascript">
+    	  function getRandomInt(min, max) {
+    		return Math.floor(Math.random() * (max - min + 1)) + min;
+	  }
+    
       var map = L.map('map', {
         center: [0, 0],
         zoom: 9,
         minZoom: 1,
-        zoomDelta: 0.1
+        zoomDelta: 0.1,
+        zoomControl: false
       });
 
       L.tileLayer('/api/mosaic/{x}/{y}/{z}', {
@@ -28,6 +27,28 @@
         tileSize: 512
 	    }).addTo(map);
       
+      var count = 0;
+      var out = true;
+      setInterval(function() {
+      	console.log("Zoom");
+      	count = count + 1;
+      	if (count % 8 === 0) {
+      		out = !out;
+  		}
+  		if (out) {
+  			map.zoomOut(1);
+  		} else {
+  			map.zoomIn(1);
+  		}
+	}, 5000);
+	
+	var x = 0;
+	setInterval(function() {
+		console.log("Pan");
+		x = x + 7;
+		map.setView([0, x], map.getZoom(), {duration: 1, animate: true});
+	}, 39000);
+
     </script>
   </body>
 </html>

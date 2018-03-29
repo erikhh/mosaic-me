@@ -7,7 +7,6 @@ import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.eclipse.jetty.http.QuotedQualityCSV;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.highmoor.cli.BuildIndexCommand;
 import org.highmoor.resources.MosaicResource;

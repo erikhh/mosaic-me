@@ -9,9 +9,10 @@ mosaicSize:
 sourceDir: /Users/erik/Instagram
 
 logging:
-    level: INFO
+    level: WARN
     loggers:
-        org.highmoor: DEBUG
+        org.highmoor: WARN
+        org.highmoor.core.MosaicService: WARN
 
 server:
     type: simple

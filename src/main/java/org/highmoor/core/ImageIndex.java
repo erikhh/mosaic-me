@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.imageio.ImageIO;
 import lombok.Builder;
+import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.highmoor.api.Pixel;
@@ -49,6 +50,7 @@ public class ImageIndex {
   @Builder
   private ImageIndex(@NonNull String indexDir) {
     this.indexDir = indexDir;
+    log.warn("Loading index dir {}", indexDir);
     Stopwatch timer = Stopwatch.createStarted();
     File indexDirFile = Paths.get(indexDir, ORIG).toFile();
     if (!indexDirFile.exists()) {
@@ -187,6 +189,7 @@ public class ImageIndex {
           Path originalPath = Paths.get(indexDir, ORIG).resolve(basePath);
           BufferedImage original = ImageIO.read(originalPath.toFile());
           BufferedImage scaled = new BufferedImage(width, height, original.getType());
+          @Cleanup("dispose")
           Graphics2D g = scaled.createGraphics();
           g.drawImage(original.getScaledInstance(width, height, Image.SCALE_FAST), 0, 0, null);
           g.dispose();

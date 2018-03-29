@@ -1,21 +1,25 @@
 package org.highmoor.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
 import lombok.Builder;
+import lombok.Cleanup;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.highmoor.api.Grid;
 import org.highmoor.api.Mosaic;
@@ -29,7 +33,7 @@ import org.highmoor.core.MosaicService;
 @Produces("image/jpeg")
 @Slf4j
 public class MosaicResource {
-
+  
   @NonNull
   private final MosaicService mosaicService;
   
@@ -38,6 +42,12 @@ public class MosaicResource {
   
   @NonNull
   private final java.nio.file.Path mosaicDirectory;
+  
+  private volatile Mosaic mosaic;
+  private volatile long lastModified;
+  
+  @Builder.Default
+  private Stopwatch checkFileTimer = Stopwatch.createStarted();
   
   @GET
   public Response getMosaicTile(@PathParam("x") Integer x, @PathParam("y") Integer y, @PathParam("z") Integer z) throws IOException {
@@ -55,25 +65,33 @@ public class MosaicResource {
     
     BufferedImage tile = mosaicService.generateTile(mosaic, tileWidth, tileHeight, x1, y1, x2, y2);
     
+    @Cleanup
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ImageIO.write(tile, "jpeg", baos);
-    
-    return Response.ok(new ByteArrayInputStream(baos.toByteArray())).build();
+    CacheControl cc = new CacheControl();
+    cc.setMaxAge(90);
+    return Response
+        .ok(new ByteArrayInputStream(baos.toByteArray()))
+        .cacheControl(cc)
+        .build();
   }
 
+  @SneakyThrows
   private Mosaic getMostRecentMosaic() {
-    File[] files = mosaicDirectory.toFile().listFiles();
-    Arrays.sort(files, (l, r) -> {
-      return new Long(r.lastModified() - l.lastModified()).intValue();
-    });
-    
-    try {
-      log.debug("Reading mosaic: {}", files[0]);
-      return new ObjectMapper().readValue(files[0], Mosaic.class);
-    } catch (IOException e) {
-      log.error("Failed to read mosaic; {}", files[0].getAbsolutePath());
-      throw new RuntimeException(e);
+    File mosaicFile = Paths.get(mosaicDirectory.toString(), "mosaic.json").toFile();
+    if (mosaic == null) {
+      mosaic = new ObjectMapper().readValue(mosaicFile, Mosaic.class);
+      lastModified = mosaicFile.lastModified();
+    } else if (checkFileTimer.elapsed().toMillis() > 30L * 1000L) {
+      checkFileTimer.reset();
+      checkFileTimer.start();
+      if (lastModified != mosaicFile.lastModified()) {
+        log.warn("Replacing Mosaic");
+        mosaic = null;
+        return getMostRecentMosaic();
+      }
     }
+    return mosaic;
   }
   
   private int timesTimesTwo(int value, int timesTwo) {

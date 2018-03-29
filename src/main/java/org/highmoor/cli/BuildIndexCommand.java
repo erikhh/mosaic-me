@@ -1,7 +1,6 @@
 package org.highmoor.cli;
 
 import com.google.common.io.Files;
-import com.google.inject.Inject;
 import com.hubspot.dropwizard.guice.GuiceBundle;
 
 import io.dropwizard.cli.EnvironmentCommand;
@@ -10,8 +9,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import lombok.Builder;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;

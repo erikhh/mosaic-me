@@ -8,9 +8,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.concurrent.Future;
 import javax.imageio.ImageIO;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -19,6 +19,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.Builder;
+import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -43,10 +44,13 @@ public class PhotoResource {
   @NonNull
   private java.nio.file.Path mosaicDirectory;
   
+  @Builder.Default
+  private Future<Void> runningCacheLoader = null;
+  
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.TEXT_PLAIN)
-  public Object newPhoto(@FormDataParam("picture") InputStream fileInputStream) throws IOException, URISyntaxException {
+  public Object newPhoto(@FormDataParam("webcam") InputStream fileInputStream) throws IOException, URISyntaxException {    
     BufferedImage original = ImageIO.read(fileInputStream);
     log.debug("Original w:{} h: {}", original.getWidth(), original.getHeight());
     int x = 0;
@@ -65,14 +69,15 @@ public class PhotoResource {
     log.debug("Copped x:{} y:{} w: {} h:{}", x, y, w, h);
     BufferedImage cropped = original.getSubimage(x, y, w, h);
     BufferedImage scaled = new BufferedImage(mosaicSize.getWidth(), mosaicSize.getHeight(), original.getType());
+    @Cleanup("dispose")
     Graphics2D g = scaled.createGraphics();
     g.drawImage(cropped.getScaledInstance(mosaicSize.getWidth(), mosaicSize.getHeight(), Image.SCALE_FAST), 0, 0, null);
     g.dispose();
     
     Mosaic mosaic = mosaicService.generateMosaic(scaled);
-    File mosaicFile = Paths.get(mosaicDirectory.toString(), System.currentTimeMillis() + ".json").toFile();
+    File mosaicFile = Paths.get(mosaicDirectory.toString(), "mosaic.json").toFile();
     new ObjectMapper().writeValue(mosaicFile, mosaic);
-    return Response.seeOther(new URI("/")).build();
+    return Response.ok().build();
   }
   
 }
